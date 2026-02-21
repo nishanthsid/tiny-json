@@ -1,6 +1,8 @@
 #include "file_utils.hpp"
 #include "consts.hpp"
 #include <stdexcept>
+#include <cstring>
+#include <algorithm>
 
 void FileUtils::OutFileWriter::flush(){
     if(buffPushed > 0){
@@ -23,6 +25,41 @@ void FileUtils::OutFileWriter::writeChar(char nextChar){
     }
 }
 
-FileUtils::OutFileWriter::~OutFileWriter(){
+void FileUtils::OutFileWriter::writeString(std::string& str){
+    std::size_t ind = 0;
+    while(ind < str.size()){
+        size_t remSpace = Consts::BUFFER_SIZE - buffPushed;
+        size_t toCopy = std::min(remSpace, str.size() - ind);
+        std::memcpy(
+            textChunk.data() + buffPushed,
+            str.data() + ind,
+            toCopy
+        );
+
+        buffPushed += toCopy;
+        ind += toCopy;
+
+        if(buffPushed == Consts::BUFFER_SIZE){
+            flush();
+        }
+    }
+}
+
+void FileUtils::OutFileWriter::fillChars(char c, std::size_t count){
+    std::size_t ind = 0;
+    while(ind < count){
+        size_t remSpace = Consts::BUFFER_SIZE - buffPushed;
+        size_t toCopy = std::min(remSpace, count - ind);
+        std::fill_n(textChunk.begin() + buffPushed, toCopy, c);
+        buffPushed += toCopy;
+        ind += toCopy;
+
+        if(buffPushed == Consts::BUFFER_SIZE){
+            flush();
+        }
+    }
+}
+
+FileUtils::OutFileWriter::~OutFileWriter() noexcept{
     flush();
 }

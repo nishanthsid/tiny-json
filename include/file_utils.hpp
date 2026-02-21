@@ -22,7 +22,7 @@ namespace FileUtils{
         bool isEof() const;
         int nextChar();
     };
-
+    
     class OutFileWriter{
         std::vector<char> textChunk;
         std::ofstream file;
@@ -31,6 +31,8 @@ namespace FileUtils{
         public:
         explicit OutFileWriter(std::string);
         void writeChar(char);
+        void writeString(std::string&);
+        void fillChars(char, std::size_t);
         ~OutFileWriter() noexcept;
 
     };
