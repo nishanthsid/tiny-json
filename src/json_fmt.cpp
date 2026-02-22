@@ -64,6 +64,12 @@ void JFormat::Fomatter::format(std::string inputFile, std::string outputFile, in
                         break;
                     case '\"':
                         context = JFormatContext::STRING;
+                        if(isNewLine){
+                            isNewLine = 0;
+                            outPutJson.fillChars(' ', level * indent);
+                        }
+                        outPutJson.writeChar(nextChar);
+                        break;
                     default:
                         if(isNewLine){
                             isNewLine = 0;
