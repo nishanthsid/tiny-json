@@ -9,6 +9,7 @@ void JFormat::Fomatter::format(std::string inputFile, std::string outputFile, in
     int nextChar;
     int isNewLine = 0;
     int isEscapedChar = 0;
+    context = JFormatContext::NORMAL;
     while(true){
         nextChar = inputJson.nextChar();
         if(inputJson.isEof()){
@@ -107,6 +108,63 @@ void JFormat::Fomatter::format(std::string inputFile, std::string outputFile, in
                 break;
 
             }
+        }
+    }
+}
+
+void JFormat::Fomatter::minify(std::string inputFile, std::string outputFile){
+    FileUtils::InpFileReader inputJson(inputFile);
+    FileUtils::OutFileWriter outPutJson(outputFile);
+    context = JFormatContext::NORMAL;
+    int isEscapedChar = 0;
+    while(true){
+        char nextChar = inputJson.nextChar();
+        if(inputJson.isEof()){
+            break;
+        }
+        switch(context){
+            case JFormatContext::NORMAL: {
+                switch(nextChar){
+                    case '\n':
+                    case '\t':
+                    case ' ' :
+                        break;
+                    case '\"':
+                        context = JFormatContext::STRING;
+                        outPutJson.writeChar(nextChar);
+                        break;
+                    default:
+                        outPutJson.writeChar(nextChar);
+                        break;
+                }
+                break;
+            }
+            case JFormatContext::STRING: {
+                switch(nextChar){
+                    case '\\':
+                        isEscapedChar = 1;
+                        outPutJson.writeChar(nextChar);
+                        break;
+                    case '\"':
+                        outPutJson.writeChar('\"');
+                        if(isEscapedChar == 0){
+                            context = JFormatContext::NORMAL;
+                        }
+                        else{
+                            isEscapedChar = 0;
+                        }
+                        break;
+                    default:
+                        if(isEscapedChar){
+                            isEscapedChar = 0;
+                        }
+                        outPutJson.writeChar(nextChar);
+                        break;
+                    
+                }
+                break;
+            }
+
         }
     }
 }
